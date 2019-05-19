@@ -3,7 +3,7 @@ const handimg = document.getElementById("handimage");
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 let trackButton = document.getElementById("trackbutton");
-let nextImageButton = document.getElementById("nextimagebutton");
+let windowButton = document.getElementById("windowbutton")
 let updateNote = document.getElementById("updatenote");
 
 let imgindex = 1
@@ -12,6 +12,8 @@ let model = null;
 
 // video.width = 500
 // video.height = 400
+
+var myWindow;
 
 const modelParams = {
     flipHorizontal: true,   // flip e.g for video  
@@ -47,28 +49,17 @@ function toggleVideo() {
 
 
 
-nextImageButton.addEventListener("click", function(){
-    nextImage();
-});
-
 trackButton.addEventListener("click", function(){
     toggleVideo();
 });
-
-function nextImage() {
-
-    imgindex++;
-    handimg.src = "images/" + imgindex % 15 + ".jpg"
-    // alert(handimg.src)
-    runDetectionImage(handimg)
-}
-
-
 
 function runDetection() {
     model.detect(video).then(predictions => {
         console.log("Predictions: ", predictions);
         model.renderPredictions(predictions, canvas, context, video);
+        if (predictions.length > 0) { 
+            moveWin((predictions[0].bbox[0] + (predictions[0].bbox[2] / 2)) , (predictions[0].bbox[1] + (predictions[0].bbox[3] / 2)) )
+        }
         if (isVideo) {
             requestAnimationFrame(runDetection);
         }
@@ -82,6 +73,19 @@ function runDetectionImage(img) {
     });
 }
 
+function openWin() {
+  myWindow=window.open("", "myWindow", "width=200, height=100");
+  myWindow.document.write("<p>This is a window.</p>");
+}
+
+function moveWin(p1, p2) {
+  myWindow.moveTo(p1, p2);
+}
+
+windowButton.addEventListener("click", function(){
+    openWin();
+})
+
 // Load the model.
 handTrack.load(modelParams).then(lmodel => {
     // detect objects in the image.
@@ -89,5 +93,4 @@ handTrack.load(modelParams).then(lmodel => {
     updateNote.innerText = "Loaded Model!"
     runDetectionImage(handimg)
     trackButton.disabled = false
-    nextImageButton.disabled = false
 });
